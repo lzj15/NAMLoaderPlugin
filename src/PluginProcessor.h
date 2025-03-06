@@ -4,8 +4,6 @@
 #include <juce_dsp/juce_dsp.h>
 #include "NeuralAmpModeler.h"
 #include <ff_meters.h>
-#include "EqProcessor.h"
-#include "DoublerProcessor.h"
 #include "PresetManager/PresetManager.h"
 //==============================================================================
 /**
@@ -64,7 +62,6 @@ public:
 
     bool getTriggerStatus ();
 
-    bool supportsDoublePrecisionProcessing () const override;
 
     const std::string getLastModelPath() { return lastModelPath; };
     const std::string getLastModelName() { return lastModelName; };
@@ -116,10 +113,7 @@ private:
 
     bool namModelLoaded{false};
 
-    EqProcessor tenBandEq;
-    Doubler doubler;
 
-    bool supportsDouble{false};
 
     foleys::LevelMeterSource meterInSource;
     foleys::LevelMeterSource meterOutSource;

@@ -6,8 +6,6 @@ PRIVATE
     NamEditor.cpp
     PluginEditor.cpp
     PluginProcessor.cpp
-    EqEditor.cpp
-    EqProcessor.cpp
     TopBarComponent.cpp
     architecture.hpp
 )

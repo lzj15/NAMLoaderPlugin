@@ -20,8 +20,10 @@ NamJUCEAudioProcessor::NamJUCEAudioProcessor()
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
     #endif
                          ),
-      apvts(*this, nullptr, "Params", createParameters()), lowCut(juce::dsp::IIR::Coefficients<float>::makeHighPass(44100, 20.0f, 1.0f)),
-      highCut(juce::dsp::IIR::Coefficients<float>::makeLowPass(44100, 20000.0f, 1.0f)), presetManager(apvts)
+      apvts(*this, nullptr, "Params", createParameters()),
+      lowCut(juce::dsp::IIR::Coefficients<float>::makeHighPass(44100, 20.0f, 1.0f)),
+      highCut(juce::dsp::IIR::Coefficients<float>::makeLowPass(44100, 20000.0f, 1.0f)),
+      presetManager(apvts)
 #endif
 {
     filterCuttofs[OutputFilters::LowCutF] = apvts.getRawParameterValue("LOWCUT_ID");
@@ -103,10 +105,7 @@ void NamJUCEAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     cab.reset();
     cab.prepare(spec);
 
-    tenBandEq.prepare(spec);
-    tenBandEq.hookParameters(apvts);
 
-    doubler.prepare(spec);
 
     lowCut.reset();
     lowCut.prepare(spec);
@@ -340,34 +339,16 @@ void NamJUCEAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
             buffer.applyGain(juce::Decibels::decibelsToGain(6.0f));
     }
 
-    // Ten-Band EQ Module
-    if (*apvts.getRawParameterValue("EQ_BYPASS_STATE_ID"))
-        tenBandEq.process(buffer);
+    // Ten-Band EQ Module deleted
 
     // Do Dual Mono
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         channelDataRight[sample] = channelDataLeft[sample];
 
 
-    // Filters
-    if (filterCuttofs[OutputFilters::LowCutF]->load() > 20)
-    {
-        *lowCut.state = *juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), filterCuttofs[OutputFilters::LowCutF]->load(), 1.0f);
-        lowCut.process(juce::dsp::ProcessContextReplacing<float>(block));
-    }
+    // Filters deleted
 
-    if (filterCuttofs[OutputFilters::HighCutF]->load() < 20000)
-    {
-        *highCut.state = *juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), filterCuttofs[OutputFilters::HighCutF]->load(), 1.0f);
-        highCut.process(juce::dsp::ProcessContextReplacing<float>(block));
-    }
-
-    // Doubler
-    if (*apvts.getRawParameterValue("DOUBLER_SPREAD_ID") > 0.0)
-    {
-        doubler.setDelayMs(*apvts.getRawParameterValue("DOUBLER_SPREAD_ID"));
-        doubler.process(buffer);
-    }
+    // Doubler deleted
 
     meterOutSource.measureBlock(buffer);
 }
@@ -509,15 +490,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout NamJUCEAudioProcessor::creat
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DOUBLER_SPREAD_ID", "DOUBLER_SPREAD", normRange, 0.0));
     parameters.push_back(std::make_unique<juce::AudioParameterBool>("SMALL_WINDOW_ID", "SMALL_WINDOW", false, "SMALL_WINDOW"));
 
-    tenBandEq.pushParametersToTree(parameters);
 
     return {parameters.begin(), parameters.end()};
 }
 
-bool NamJUCEAudioProcessor::supportsDoublePrecisionProcessing() const
-{
-    return supportsDouble;
-}
 
 //==============================================================================
 // This creates new instances of the plugin..
